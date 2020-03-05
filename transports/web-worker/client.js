@@ -1,7 +1,9 @@
-class Client {
+const { EventEmitter } = require("../../common");
+
+class Client extends EventEmitter {
   constructor({ postMessage }) {
+    super();
     this.postMessage = postMessage;
-    this.listeners = {};
   }
   connect() {
     this.emit("connect");
@@ -12,20 +14,6 @@ class Client {
   }
   send(data) {
     this.postMessage(data);
-  }
-  emit(event, ...args) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event].forEach(fn => fn(...args));
-  }
-  on(event, callback) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event].push(callback);
-    return this;
-  }
-  off(event, callback) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event] = this.listeners[event].filter(fn => fn !== callback);
-    return this;
   }
 }
 

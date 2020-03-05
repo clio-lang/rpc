@@ -1,7 +1,9 @@
-class WebWorkerSocket {
+const { EventEmitter } = require("../../common");
+
+class WebWorkerSocket extends EventEmitter {
   constructor(worker) {
+    super();
     this.worker = worker;
-    this.listeners = {};
     this.messageIds = new Set();
     this.connect();
   }
@@ -18,20 +20,6 @@ class WebWorkerSocket {
     const { id } = data;
     this.messageIds.add(id);
     this.worker.postMessage(data);
-  }
-  emit(event, ...args) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event].forEach(fn => fn(...args));
-  }
-  on(event, callback) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event].push(callback);
-    return this;
-  }
-  off(event, callback) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event] = this.listeners[event].filter(fn => fn !== callback);
-    return this;
   }
 }
 

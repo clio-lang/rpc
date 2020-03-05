@@ -1,11 +1,12 @@
 const readline = require("readline");
 const net = require("net");
 const { Server } = require("./server");
+const { EventEmitter } = require("../../common");
 
-class Client {
+class Client extends EventEmitter {
   constructor(config) {
+    super();
     this.ipcConfig = config || Server.defaultIPCConfig();
-    this.listeners = {};
   }
   connect() {
     this.socket = net.connect(this.ipcConfig.path);
@@ -20,20 +21,6 @@ class Client {
   onData(data) {
     const deserialized = JSON.parse(data);
     this.emit("message", deserialized);
-  }
-  emit(event, ...args) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event].forEach(fn => fn(...args));
-  }
-  on(event, callback) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event].push(callback);
-    return this;
-  }
-  off(event, callback) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event] = this.listeners[event].filter(fn => fn !== callback);
-    return this;
   }
 }
 

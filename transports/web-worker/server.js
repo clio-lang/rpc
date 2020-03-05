@@ -1,27 +1,14 @@
 const { WebWorkerSocket } = require("./socket");
+const { EventEmitter } = require("../../common");
 
-class WrappedWebWorker {
+class WrappedWebWorker extends EventEmitter {
   constructor(worker) {
+    super();
     this.worker = worker;
-    this.listeners = {};
     this.worker.onmessage = message => this.emit("message", message);
   }
   postMessage(message) {
     this.worker.postMessage(message);
-  }
-  emit(event, ...args) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event].forEach(fn => fn(...args));
-  }
-  on(event, callback) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event].push(callback);
-    return this;
-  }
-  off(event, callback) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event] = this.listeners[event].filter(fn => fn !== callback);
-    return this;
   }
 }
 
@@ -34,11 +21,11 @@ class inSocket {
   }
 }
 
-class Socket {
+class Socket extends EventEmitter {
   constructor(server) {
+    super();
     this.server = server;
     this.inSocket = new inSocket(this);
-    this.listeners = {};
   }
   connect() {
     this.emit("connect");
@@ -46,26 +33,12 @@ class Socket {
   send(data) {
     this.server.handleIncoming(this.inSocket, data);
   }
-  emit(event, ...args) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event].forEach(fn => fn(...args));
-  }
-  on(event, callback) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event].push(callback);
-    return this;
-  }
-  off(event, callback) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event] = this.listeners[event].filter(fn => fn !== callback);
-    return this;
-  }
 }
 
-class Server {
+class Server extends EventEmitter {
   constructor() {
+    super();
     this.workers = [];
-    this.listeners = {};
     this.messageIds = new Map();
   }
   start() {}
@@ -84,20 +57,6 @@ class Server {
   handleIncoming(socket, data) {
     const { instruction, details, id } = data;
     this.emit(instruction, socket, details, id);
-  }
-  emit(event, ...args) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event].forEach(fn => fn(...args));
-  }
-  on(event, callback) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event].push(callback);
-    return this;
-  }
-  off(event, callback) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event] = this.listeners[event].filter(fn => fn !== callback);
-    return this;
   }
 }
 

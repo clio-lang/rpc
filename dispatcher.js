@@ -1,10 +1,12 @@
-class Dispatcher {
+const { EventEmitter } = require("./common");
+
+class Dispatcher extends EventEmitter {
   constructor() {
+    super();
     this.workers = new Map();
     this.sockets = new Map();
     this.jobs = new Map();
     this.connectedWorkers = [];
-    this.listeners = {};
     this.transports = [];
   }
   addTransport(transport) {
@@ -68,16 +70,6 @@ class Dispatcher {
       };
       this.on("workerConnected", waitForN);
     });
-  }
-  on(event, callback) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event].push(callback);
-    return this;
-  }
-  off(event, callback) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event] = this.listeners[event].filter(fn => fn !== callback);
-    return this;
   }
 }
 

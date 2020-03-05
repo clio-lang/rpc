@@ -2,11 +2,12 @@ const readline = require("readline");
 const net = require("net");
 const path = require("path");
 const { IPCSocket } = require("./socket");
+const { EventEmitter } = require("../../common");
 
-class Server {
+class Server extends EventEmitter {
   constructor(config) {
+    super();
     this.ipcConfig = config || Server.defaultIPCConfig();
-    this.listeners = {};
   }
   static getIPCPath({ name }) {
     const paths = [process.cwd(), name];
@@ -37,20 +38,6 @@ class Server {
   }
   start() {
     return this.createIPCServer();
-  }
-  emit(event, ...args) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event].forEach(fn => fn(...args));
-  }
-  on(event, callback) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event].push(callback);
-    return this;
-  }
-  off(event, callback) {
-    this.listeners[event] = this.listeners[event] || [];
-    this.listeners[event] = this.listeners[event].filter(fn => fn !== callback);
-    return this;
   }
 }
 
