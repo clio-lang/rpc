@@ -37,6 +37,9 @@ class Executor {
     else this.transport.on("connect", send);
     return promise;
   }
+  getFunction(path) {
+    return (...args) => this.call(path, args);
+  }
 }
 
 module.exports.Executor = Executor;
