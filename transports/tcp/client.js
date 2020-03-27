@@ -14,6 +14,7 @@ class Client extends EventEmitter {
     this.rl = readline.createInterface(this.socket);
     this.rl.on("line", data => this.onData(data));
     this.socket.on("connect", () => this.emit("connect"));
+    this.socket.on("error", error => this.emit("error", error));
     this.socket.on("close", () => this.rl.close());
   }
   send(data) {
