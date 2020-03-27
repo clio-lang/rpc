@@ -8,6 +8,7 @@ class Server extends EventEmitter {
   constructor(config) {
     super();
     this.ipcConfig = config || Server.defaultIPCConfig();
+    this.ready = false;
   }
   static getIPCPath({ name }) {
     const paths = [process.cwd(), name];
@@ -23,8 +24,13 @@ class Server extends EventEmitter {
     if (!this.ipcConfig) return;
     const { path } = this.ipcConfig;
     this.ipcServer = net.createServer();
+    this.ipcServer.on("listening", () => this.onListening());
     this.ipcServer.listen(path);
     this.ipcServer.on("connection", socket => this.onIPCConnect(socket));
+  }
+  onListening() {
+    this.ready = true;
+    this.emit("listening");
   }
   onIPCConnect(socket) {
     socket.rl = readline.createInterface(socket);

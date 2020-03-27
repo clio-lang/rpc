@@ -40,8 +40,12 @@ class Server extends EventEmitter {
     super();
     this.workers = [];
     this.messageIds = new Map();
+    this.ready = false;
   }
-  start() {}
+  start() {
+    this.emit("listening");
+    this.ready = true;
+  }
   addWorker(worker) {
     const wrappedWorker = new WrappedWebWorker(worker);
     const socket = new WebWorkerSocket(wrappedWorker);
