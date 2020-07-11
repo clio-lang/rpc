@@ -11,7 +11,7 @@ const fork = () => {
   for (let i = 0; i < numCPUs; i++) cluster.fork();
 };
 
-const logResults = args => result =>
+const logResults = (args) => (result) =>
   console.log(`${args.join(" ")} -> /api/add := ${result}`);
 
 const call = () => {
@@ -24,11 +24,11 @@ const call = () => {
 };
 
 if (cluster.isMaster) {
-  //const dispatcher = new Dispatcher();
-  //const transport = new TCP.Server();
-  //dispatcher.addTransport(transport);
-  //transport.tcpServer.on("listening", fork);
-  //dispatcher.expectWorkers(numCPUs).then(call);
+  const dispatcher = new Dispatcher();
+  const transport = new TCP.Server();
+  dispatcher.addTransport(transport);
+  transport.tcpServer.on("listening", fork);
+  dispatcher.expectWorkers(numCPUs).then(call);
   fork();
 } else {
   const transport = new TCP.Client();

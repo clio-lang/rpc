@@ -27,7 +27,7 @@ class Dispatcher extends EventEmitter {
   registerWorker(worker, { paths }, id) {
     for (const path of paths)
       this.workers.set(path, [...(this.workers.get(path) || []), worker]);
-    worker.on("message", data => this.handleWorkerResponse(data));
+    worker.on("message", (data) => this.handleWorkerResponse(data));
     for (const path of paths) {
       const jobs = this.jobs.get(path) || [];
       this.jobs.set(path, []);
@@ -35,12 +35,12 @@ class Dispatcher extends EventEmitter {
     }
     this.connectedWorkers.push(worker);
     const listeners = this.listeners.workerConnected || [];
-    listeners.forEach(fn => fn.call(this, worker));
+    listeners.forEach((fn) => fn.call(this, worker));
   }
   addJob(socket, { path, args }, id) {
     this.jobs.set(path, [
       ...(this.jobs.get(path) || []),
-      [socket, { path, args }, id]
+      [socket, { path, args }, id],
     ]);
   }
   handleWorkerResponse(data) {
@@ -59,7 +59,7 @@ class Dispatcher extends EventEmitter {
     socket.send({ ...data, id });
   }
   expectWorkers(n) {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       if (this.connectedWorkers.length >= n) resolve();
       const waitForN = () => {
         const { length } = this.connectedWorkers;

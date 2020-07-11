@@ -3,9 +3,9 @@ const { randomId } = require("./common");
 class Worker {
   constructor(transport) {
     this.transport = transport;
-    this.transport.on("message", data => this.handleData(data));
+    this.transport.on("message", (data) => this.handleData(data));
     this.transport.on("connect", () => this.handleConnect());
-    this.transport.on("error", error => this.onError(error));
+    this.transport.on("error", (error) => this.onError(error));
     this.functions = new Map();
     this.retries = 10;
   }
@@ -31,11 +31,13 @@ class Worker {
     this.retries = 10;
     const id = randomId(32);
     const paths = [...this.functions.keys()];
-    this.send({
-      instruction: "registerWorker",
-      details: { paths },
+    this.send(
+      {
+        instruction: "registerWorker",
+        details: { paths },
+      },
       id
-    });
+    );
   }
   handleData(data) {
     const { instruction, details, id } = data;
