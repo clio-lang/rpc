@@ -20,6 +20,9 @@ class Executor {
     if (instruction == "result") {
       const { result } = details;
       return this.promises.get(id).resolve(result);
+    } else if (instruction == "paths") {
+      const { paths } = details;
+      return this.promises.get(id).resolve(paths);
     }
   }
   call(path, args) {
@@ -31,7 +34,7 @@ class Executor {
       this.transport.send({
         instruction: "call",
         details: { path, args },
-        id
+        id,
       });
     if (this.isConnected) send();
     else this.transport.on("connect", send);
@@ -39,6 +42,24 @@ class Executor {
   }
   getFunction(path) {
     return (...args) => this.call(path, args);
+  }
+  async getFunctions(path) {
+    const id = randomId(32);
+    const promise = new Promise(resolve => {
+      this.promises.set(id, { resolve });
+    });
+    const send = () =>
+      this.transport.send({
+        instruction: "getPaths",
+        details: { path },
+        id,
+      });
+    if (this.isConnected) send();
+    else this.transport.on("connect", send);
+    const paths = await promise;
+    const fns = {};
+    for (const path of paths) fns[path] = this.getFunction(path);
+    return fns;
   }
 }
 

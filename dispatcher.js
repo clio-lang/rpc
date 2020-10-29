@@ -8,10 +8,12 @@ class Dispatcher extends EventEmitter {
     this.jobs = new Map();
     this.connectedWorkers = [];
     this.transports = [];
+    this.index = 0;
   }
   addTransport(transport) {
     this.transports.push(transport);
     transport.on("call", (...args) => this.call(...args));
+    transport.on("getPaths", (...args) => this.getPaths(...args));
     transport.on("registerWorker", (...args) => this.registerWorker(...args));
     transport.start();
   }
@@ -24,10 +26,14 @@ class Dispatcher extends EventEmitter {
       this.addJob(socket, { path, args }, id);
     }
   }
+  getPaths(socket, { path }, id) {
+    const paths = [...this.workers.keys()].filter(p => p.startsWith(path));
+    this.send(socket, { instruction: "paths", details: { paths } }, id);
+  }
   registerWorker(worker, { paths }, id) {
     for (const path of paths)
       this.workers.set(path, [...(this.workers.get(path) || []), worker]);
-    worker.on("message", (data) => this.handleWorkerResponse(data));
+    worker.on("message", data => this.handleWorkerResponse(data));
     for (const path of paths) {
       const jobs = this.jobs.get(path) || [];
       this.jobs.set(path, []);
@@ -35,7 +41,7 @@ class Dispatcher extends EventEmitter {
     }
     this.connectedWorkers.push(worker);
     const listeners = this.listeners.workerConnected || [];
-    listeners.forEach((fn) => fn.call(this, worker));
+    listeners.forEach(fn => fn.call(this, worker));
   }
   addJob(socket, { path, args }, id) {
     this.jobs.set(path, [
@@ -59,7 +65,7 @@ class Dispatcher extends EventEmitter {
     socket.send({ ...data, id });
   }
   expectWorkers(n) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       if (this.connectedWorkers.length >= n) resolve();
       const waitForN = () => {
         const { length } = this.connectedWorkers;
